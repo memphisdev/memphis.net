@@ -2,45 +2,52 @@
 using Memphis.Client.Core;
 using System.Text.Json;
 
+MemphisClient? memphisClient = null;
+
 try
 {
     var options = MemphisClientFactory.GetDefaultOptions();
-    options.Host = "aws-us-east-1.cloud.memphis.dev";
-    options.AccountId = int.Parse(Environment.GetEnvironmentVariable("memphis_account_id"));
-    options.Username = "test_user";
-    options.Password = Environment.GetEnvironmentVariable("memphis_pass");
+    options.Host = "<memphis-host>";
+    // options.AccountId = "<memphis-accountId>";
+    options.Username = "<memphis-username>";
+    options.Password = "<memphis-password>";
 
-    var memphisClient = await MemphisClientFactory.CreateClient(options);
+    memphisClient = await MemphisClientFactory.CreateClient(options);
 
     var consumer = await memphisClient.CreateConsumer(
        new Memphis.Client.Consumer.MemphisConsumerOptions
        {
-           StationName = "test_station",
-           ConsumerName = "consumer"
+           StationName = "<station-name>",
+           ConsumerName = "<consumer-name>"
        });
 
-    var messages = consumer.Fetch(3, false);
+    while (true) {
+        var messages = consumer.Fetch(3, false);
 
-    foreach (MemphisMessage message in messages)
-    {
-        var messageData = message.GetData();
-        var messageOBJ = JsonSerializer.Deserialize<Message>(messageData);
+        if (!messages.Any())
+        {
+            continue;
+        }
 
-        // Do something with the message here
-        Console.WriteLine(JsonSerializer.Serialize(messageOBJ));
+        foreach (MemphisMessage message in messages)
+        {
+            var messageData = message.GetData();
+            var messageOBJ = JsonSerializer.Deserialize<Message>(messageData);
 
-        message.Ack();
+            // Do something with the message here
+            Console.WriteLine(JsonSerializer.Serialize(messageOBJ));
+
+            message.Ack();
+        }
     }
-
-    memphisClient.Dispose();
-
 }
 catch (Exception ex)
 {
     Console.Error.WriteLine(ex.Message);
+    memphisClient?.Dispose();
 }
 
 public class Message
 {
-    public string Hello { get; set; }
+    public string? Hello { get; set; }
 }

@@ -46,10 +46,10 @@ using Memphis.Client;
 
 // Connecting to the broker
 var options = MemphisClientFactory.GetDefaultOptions();
-options.Host = "aws-us-east-1.cloud.memphis.dev";
-options.AccountId = int.Parse(Environment.GetEnvironmentVariable("memphis_account_id"));
-options.Username = "test_user";
-options.Password = Environment.GetEnvironmentVariable("memphis_pass");
+options.Host = "<memphis-host>";
+options.AccountId = <memphis-accountid>;
+options.Username = "<memphis-username>";
+options.Password = "<memphis-password>";
 
 var memphisClient = await MemphisClientFactory.CreateClient(options);
 ```
@@ -67,8 +67,8 @@ var headers = new NameValueCollection();
 var msgBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 await memphisClient.ProduceAsync(new Memphis.Client.Producer.MemphisProducerOptions
     {
-        StationName = "test_station",
-        ProducerName = "producer"
+        StationName = "<station-name>",
+        ProducerName = "<producer-name>"
     },
     msgBytes,
     headers);
@@ -77,6 +77,8 @@ public class Message
 {
     public string Hello { get; set; }
 }
+
+memphisClient.Dispose();
 ```
 
 Lastly, to consume this message, call the `memphisClient.FetchMessages` function or create a consumer and call its `consumer.Fetch` function:
@@ -84,8 +86,8 @@ Lastly, to consume this message, call the `memphisClient.FetchMessages` function
 ```C#
 var messages = await memphisClient.FetchMessages(new Memphis.Client.Consumer.FetchMessageOptions
     {
-        StationName = "test_station",
-        ConsumerName = "consumer",
+        StationName = "<station-name>",
+        ConsumerName = "<consumer-name>",
         Prefetch = false
     });
 
@@ -98,6 +100,8 @@ foreach (MemphisMessage message in messages)
 
     message.Ack();
 }
+
+memphisClient.Dispose();
 ```
 
 > Remember to call `memphisClient.Dispose()` to close the connection!
